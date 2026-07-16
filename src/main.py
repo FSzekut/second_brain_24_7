@@ -2,6 +2,7 @@ import logging
 import os
 import rag
 
+import inbox
 from google import genai
 from openai import OpenAI
 import anthropic
@@ -28,6 +29,7 @@ if not ui_components.check_password():
 selected_provider_name, selected_model_name = ui_components.render_sidebar(
     business_logic.PROVIDERS, business_logic.DEFAULT_MESSAGES
 )
+ui_components.render_note_capture(inbox.save_note_to_inbox)
 
 if not ANTHROPIC_API_KEY:
     st.error("API Key da Anthropic não encontrada. Defina ANTHROPIC_API_KEY no arquivo .env ou nas variáveis de ambiente.")

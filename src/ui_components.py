@@ -68,3 +68,17 @@ def render_message_history(messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
+def render_note_capture(save_fn):
+    with st.sidebar:
+        with st.expander("📝 Capturar nota rápida"):
+            with st.form(key="note_form", clear_on_submit=True):
+                title = st.text_input("Título (opcional)")
+                content = st.text_area("O que você quer anotar?")
+                submitted = st.form_submit_button("Salvar nota")
+
+            if submitted:
+                if content.strip():
+                    filename = save_fn(title, content)
+                    st.success(f"Salvo: {filename}")
+                else:
+                    st.warning("Escreve alguma coisa antes de salvar 🙂")
