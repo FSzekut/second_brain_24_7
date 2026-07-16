@@ -47,4 +47,4 @@ jobs:
           flags: >-
             --allow-unauthenticated
             --service-account=chatbot-sa@meu-claude-ui-2026.iam.gserviceaccount.com
-            --update-secrets=ANTHROPIC_API_KEY=claude-api-key:latest,APP_PASSWORD=app-access-password:latest
+            --update-secrets=ANTHROPIC_API_KEY=claude-api-key:latest,APP_PASSWORD=app-access-password:latest,NVIDIA_API_KEY=nvidia-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest

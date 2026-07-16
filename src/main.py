@@ -1,6 +1,8 @@
 import logging
 import os
 
+from google import genai
+from openai import OpenAI
 import anthropic
 import streamlit as st
 from dotenv import load_dotenv
@@ -22,8 +24,8 @@ ui_components.load_css("style.css")
 if not ui_components.check_password():
     st.stop()
 
-selected_model_name = ui_components.render_sidebar(
-    business_logic.MODEL_MAPPING, business_logic.DEFAULT_MESSAGES
+selected_provider_name, selected_model_name = ui_components.render_sidebar(
+    business_logic.PROVIDERS, business_logic.DEFAULT_MESSAGES
 )
 
 if not ANTHROPIC_API_KEY:
@@ -36,7 +38,34 @@ except Exception as e:
     st.error("Erro ao inicializar o cliente da Anthropic. Verifique sua API Key. 🤖")
     st.stop()
 
-st.markdown('<h1>Meu Claude Pessoal <i class="fa-solid fa-robot"></i></h1>', unsafe_allow_html=True)
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+
+try:
+    nvidia_client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key=NVIDIA_API_KEY)
+except Exception as e:
+    st.error("Erro ao inicializar o cliente da NVIDIA. Verifique sua API Key. 🤖")
+    st.stop()
+
+clients = {
+    "Claude": client,
+    "NVIDIA NIM": nvidia_client,
+}
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+try:
+    gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+except Exception as e:
+    st.error("Erro ao inicializar o cliente do Gemini. Verifique sua API Key. 🤖")
+    st.stop()
+
+clients = {
+    "Claude": client,
+    "NVIDIA NIM": nvidia_client,
+    "Gemini": gemini_client,
+}
+
+st.markdown('<h1>Meu Brain Pessoal <i class="fa-solid fa-robot"></i></h1>', unsafe_allow_html=True)
 st.caption(f"Utilizando o modelo: **{selected_model_name}**")
 
 if "messages" not in st.session_state:
@@ -53,8 +82,10 @@ if prompt := st.chat_input("Qual sua dúvida?"):
         with st.spinner("Pensando..."):
             try:
                 api_messages = business_logic.get_api_messages(st.session_state.messages)
+                provider_info = business_logic.PROVIDERS[st.session_state.selected_provider]
+                active_client = clients[st.session_state.selected_provider]
                 response = cast(str, st.write_stream(
-                    business_logic.stream_response(client, st.session_state.selected_model, api_messages)
+                    provider_info["stream_fn"](active_client, st.session_state.selected_model, api_messages)
                 ))
             except Exception as e:
                 logger.error("Erro ao chamar API Anthropic: %r", e, exc_info=True)

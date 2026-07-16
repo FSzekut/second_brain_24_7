@@ -38,15 +38,21 @@ def render_page_config():
     )
 
 
-def render_sidebar(model_mapping, default_messages):
+def render_sidebar(providers, default_messages):
     with st.sidebar:
         st.markdown('<h1><i class="fa-solid fa-gears"></i> Configurações</h1>', unsafe_allow_html=True)
-        st.markdown("Ajuste os parâmetros do seu assistente Claude.")
+        st.markdown("Ajuste os parâmetros do seu assistente.")
 
+        selected_provider_name = st.selectbox(
+            "Escolha o provedor:",
+            options=list(providers.keys()),
+        )
+        st.session_state.selected_provider = selected_provider_name
+
+        model_mapping = providers[selected_provider_name]["models"]
         selected_model_name = st.selectbox(
             "Escolha o modelo:",
             options=list(model_mapping.keys()),
-            index=1,
         )
         st.session_state.selected_model = model_mapping[selected_model_name]
 
@@ -54,10 +60,11 @@ def render_sidebar(model_mapping, default_messages):
             st.session_state.messages = default_messages.copy()
             st.success("Histórico limpo!")
 
-    return selected_model_name
+    return selected_provider_name, selected_model_name
 
 
 def render_message_history(messages):
     for message in messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+
