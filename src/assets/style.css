@@ -1,0 +1,25 @@
+
+/* Bolhas de mensagem do chat */
+[data-testid="stChatMessage"] {
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Botões — usam a cor de destaque no hover */
+.stButton > button {
+    border-radius: 0.5rem;
+    border: 1px solid #D97757;
+    transition: all 0.2s ease;
+}
+
+.stButton > button:hover {
+    background-color: #D97757;
+    color: #17181C;
+    border-color: #D97757;
+}
+
+/* Divisor sutil entre sidebar e área principal */
+[data-testid="stSidebar"] {
+    border-right: 1px solid rgba(217, 119, 87, 0.2);
+}
