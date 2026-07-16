@@ -1,5 +1,6 @@
 import logging
 import os
+import rag
 
 from google import genai
 from openai import OpenAI
@@ -84,6 +85,10 @@ if prompt := st.chat_input("Qual sua dúvida?"):
                 api_messages = business_logic.get_api_messages(st.session_state.messages)
                 provider_info = business_logic.PROVIDERS[st.session_state.selected_provider]
                 active_client = clients[st.session_state.selected_provider]
+                api_messages = business_logic.get_api_messages(st.session_state.messages)
+                retrieved_chunks = rag.retrieve(nvidia_client, prompt)
+                context_block = rag.build_context_block(retrieved_chunks)
+                api_messages[-1]["content"] = f"{context_block}\n\nPergunta do usuário: {api_messages[-1]['content']}"
                 response = cast(str, st.write_stream(
                     provider_info["stream_fn"](active_client, st.session_state.selected_model, api_messages)
                 ))

@@ -7,3 +7,6 @@
 # Pastas de cache do Python
 __pycache__/
 *.pyc
+
+# Notas do vault em chunks
+vault_index.json
