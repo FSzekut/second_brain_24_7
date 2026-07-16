@@ -1,0 +1,63 @@
+from pathlib import Path
+import os
+import streamlit as st
+
+
+def check_password():
+    def password_entered():
+        if st.session_state["password"] == os.getenv("APP_PASSWORD"):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]
+        else:
+            st.session_state["password_correct"] = False
+
+    if st.session_state.get("password_correct", False):
+        return True
+
+    st.text_input("Senha de acesso", type="password", on_change=password_entered, key="password")
+    if "password_correct" in st.session_state and not st.session_state["password_correct"]:
+        st.error("Senha incorreta")
+    return False
+
+def load_css(file_name):
+    css_path = Path(__file__).parent / "assets" / file_name
+    if css_path.exists():
+        st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
+
+
+def render_page_config():
+    st.set_page_config(
+        page_title="Meu Claude Pessoal",
+        page_icon="🤖",
+        layout="centered",
+        initial_sidebar_state="auto",
+    )
+    st.markdown(
+        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">',
+        unsafe_allow_html=True,
+    )
+
+
+def render_sidebar(model_mapping, default_messages):
+    with st.sidebar:
+        st.markdown('<h1><i class="fa-solid fa-gears"></i> Configurações</h1>', unsafe_allow_html=True)
+        st.markdown("Ajuste os parâmetros do seu assistente Claude.")
+
+        selected_model_name = st.selectbox(
+            "Escolha o modelo:",
+            options=list(model_mapping.keys()),
+            index=1,
+        )
+        st.session_state.selected_model = model_mapping[selected_model_name]
+
+        if st.button("Limpar Histórico da Conversa"):
+            st.session_state.messages = default_messages.copy()
+            st.success("Histórico limpo!")
+
+    return selected_model_name
+
+
+def render_message_history(messages):
+    for message in messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
