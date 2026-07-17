@@ -8,4 +8,8 @@ Tela dedicada para exibir alertas de datas importantes e próximos passos penden
 
 ## Acesso remoto ao Claude Code via app
 
-Usar o link do app na nuvem para acionar/conectar ao Claude Code rodando neste notebook remotamente (via `/remote` do Claude Code), permitindo continuar sessões de trabalho fora de casa sem precisar do notebook fisicamente aberto.
+Ideia original (usar o link deste app pra acionar/controlar o Claude Code do notebook remotamente) **não é viável como pensado** — pesquisado e confirmado: não existe `/remote`; o que existe é o *Remote Control* nativo do Claude Code (`claude remote-control` / `/remote-control`), que conecta a sessão já rodando no notebook ao claude.ai/code ou app mobile, mas fala só com o backend da própria Anthropic — um app de terceiros (este Streamlit) não consegue interceptar essa conexão, e a sessão local precisa já estar de pé.
+
+Alternativas reais a avaliar, se ainda fizer sentido:
+- **Channels** (plugin Telegram/Discord do Claude Code) em vez de app web próprio, pra disparar o Claude Code de qualquer lugar
+- **RemoteTrigger + webhook**: este app dispara uma Routine na nuvem via webhook — mas isso cria uma sessão nova, não continua a sessão local existente
