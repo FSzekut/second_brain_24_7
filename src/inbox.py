@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from google.cloud import storage
 
@@ -9,7 +10,8 @@ def save_note_to_inbox(title, content):
     bucket = client.bucket(INBOX_BUCKET)
 
     now = datetime.now()
-    safe_title = title.strip().replace(" ", "-") if title else "nota"
+    safe_title = re.sub(r"[^\w\-]+", "-", title.strip()).strip("-") if title else ""
+    safe_title = safe_title or "nota"
     filename = f"{now.strftime('%Y-%m-%d-%H%M%S')}-{safe_title}.md"
 
     frontmatter = (

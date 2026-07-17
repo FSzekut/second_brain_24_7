@@ -1,2 +1,6 @@
 scripts/*
 vault_index.json
+.env
+.venv
+__pycache__
+*.pyc

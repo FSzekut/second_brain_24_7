@@ -7,7 +7,7 @@ from openai import OpenAI
 
 load_dotenv()
 
-VAULT_PATH = Path("/mnt/c/Users/ferna/OneDrive/Obsidian")
+VAULT_PATH = Path(os.getenv("VAULT_PATH", "/mnt/c/Users/ferna/OneDrive/Obsidian"))
 SKIP_DIRS = {".obsidian", "09 - Sistema", ".git"}
 EMBED_MODEL = "nvidia/nemotron-3-embed-1b"
 CHUNK_SIZE = 1500
