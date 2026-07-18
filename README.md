@@ -86,7 +86,7 @@ Cada pergunta do usuário é usada para buscar, por similaridade de cosseno, os 
 O caminho inverso do RAG: um formulário na barra lateral permite escrever uma nota rapidamente, de qualquer lugar, que vai direto para um bucket "inbox" no Cloud Storage (`src/inbox.py`). Depois, rodando localmente, `scripts/pull_inbox.py` traz essas notas de volta para `00 - Entrada/` no vault e apaga o blob do bucket.
 
 ### Painel de alertas (tarefas e prazos)
-Um painel no topo da página mostra tarefas pendentes com prazo, sem gastar nenhuma chamada de LLM: notas do vault marcadas com o frontmatter `tipo: tarefa` (mais `prazo`, `projeto` opcional e `status: pendente`) são varridas localmente por `scripts/build_alerts.py`, que gera um `alerts.json` simples (sem embeddings, sem IA) e o envia pro mesmo bucket do índice RAG. O app (`src/alerts.py`) só lê e ordena esse JSON por proximidade do prazo, destacando 🔴 atrasadas e 🟡 vencendo nos próximos 3 dias.
+Uma coluna à direita do chat mostra tarefas pendentes com prazo, sem gastar nenhuma chamada de LLM: notas do vault marcadas com o frontmatter `tipo: tarefa` (mais `prazo`, `projeto` opcional e `status: pendente`) são varridas localmente por `scripts/build_alerts.py`, que gera um `alerts.json` simples (sem embeddings, sem IA) e o envia pro mesmo bucket do índice RAG. O app (`src/alerts.py`) só lê e ordena esse JSON por proximidade do prazo, destacando 🔴 atrasadas e 🟡 vencendo nos próximos 3 dias. O painel pode ser ocultado por completo (libera a largura toda pro chat) via checkbox na barra lateral.
 
 ## Decisões de design
 
@@ -97,6 +97,7 @@ Um painel no topo da página mostra tarefas pendentes com prazo, sem gastar nenh
 - **Autenticação sem identidade federada.** Como é uma aplicação de uso pessoal exposta publicamente (`--allow-unauthenticated` no Cloud Run), o acesso é protegido por uma senha simples (`APP_PASSWORD`, guardada no Secret Manager) em vez de OAuth/IAP — suficiente para o risco real do projeto, sem a complexidade de configurar identidade federada para um usuário só.
 - **CI/CD sem chaves estáticas.** O workflow de deploy autentica no GCP via Workload Identity Federation, trocando um token de curta duração do GitHub por credenciais do GCP — nenhuma chave de service account em JSON fica armazenada como secret do GitHub.
 - **Alertas via dado estruturado, não LLM.** O painel de tarefas/prazos foi desenhado deliberadamente para não usar RAG nem qualquer chamada de LLM: RAG serve pra "achar o que é relevante pra uma pergunta" (busca aproximada, top-k), enquanto o painel precisa ser exato e completo (todas as tarefas pendentes, ordenadas por prazo). Frontmatter estruturado + leitura direta de JSON garante isso sem custo de API.
+- **Tarefa concluída = frontmatter removido, não `status: concluído`.** Deixar tarefas concluídas marcadas indefinidamente acumularia metadado morto no vault. Concluir uma tarefa significa apagar os 4 campos de frontmatter da nota, não sinalizar outro status.
 
 ## Como rodar localmente
 
@@ -149,8 +150,10 @@ Marque notas do vault com o frontmatter abaixo (só nas que forem tarefa/comprom
 tipo: tarefa
 prazo: 2026-08-01
 projeto: nome-do-projeto  # opcional
-status: pendente          # pendente | concluído
+status: pendente
 ```
+
+Quando a tarefa for concluída, não existe um valor `status: concluído` — remova os 4 campos de frontmatter da nota (ela volta a ser uma nota normal). Isso evita acumular, indefinidamente, notas marcadas como tarefa "morta" no vault.
 
 Depois rode:
 
