@@ -43,7 +43,7 @@ def build_alerts():
         if not prazo:
             continue
         alerts.append({
-            "titulo": path.stem,
+            "titulo": frontmatter.get("titulo", path.stem),
             "prazo": prazo,
             "projeto": frontmatter.get("projeto", ""),
             "source": str(path.relative_to(VAULT_PATH)),

@@ -148,12 +148,13 @@ Marque notas do vault com o frontmatter abaixo (só nas que forem tarefa/comprom
 
 ```yaml
 tipo: tarefa
+titulo: Nome legível para o painel  # opcional, senão usa o nome do arquivo
 prazo: 2026-08-01
 projeto: nome-do-projeto  # opcional
 status: pendente
 ```
 
-Quando a tarefa for concluída, não existe um valor `status: concluído` — remova os 4 campos de frontmatter da nota (ela volta a ser uma nota normal). Isso evita acumular, indefinidamente, notas marcadas como tarefa "morta" no vault.
+Quando a tarefa for concluída, não existe um valor `status: concluído` — remova os 5 campos de frontmatter da nota (ela volta a ser uma nota normal). Isso evita acumular, indefinidamente, notas marcadas como tarefa "morta" no vault.
 
 Depois rode:
 
