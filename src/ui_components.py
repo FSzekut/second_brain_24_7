@@ -30,7 +30,7 @@ def render_page_config():
     st.set_page_config(
         page_title="Meu Claude Pessoal",
         page_icon="🤖",
-        layout="wide",
+        layout="centered",
         initial_sidebar_state="auto",
     )
     st.markdown(
@@ -61,10 +61,6 @@ def render_sidebar(providers, default_messages):
             st.session_state.messages = default_messages.copy()
             st.success("Histórico limpo!")
 
-        st.session_state.show_alerts_panel = st.checkbox(
-            "🔔 Mostrar painel de alertas", value=st.session_state.get("show_alerts_panel", True)
-        )
-
     return selected_provider_name, selected_model_name
 
 
@@ -74,13 +70,11 @@ def render_message_history(messages):
             st.markdown(message["content"])
 
 def render_alerts_panel(alerts):
-    st.markdown("### 🔔 Alertas")
-
     if not alerts:
-        st.caption("Nenhuma tarefa pendente.")
         return
 
     today = date.today()
+    has_overdue = False
     rows = []
     for alert in alerts:
         try:
@@ -90,20 +84,20 @@ def render_alerts_panel(alerts):
         dias = (prazo - today).days
         if dias < 0:
             icone = "🔴"
+            has_overdue = True
         elif dias <= 3:
             icone = "🟡"
         else:
             icone = "⚪"
         projeto = f" ({alert['projeto']})" if alert.get("projeto") else ""
-        rows.append(f"{icone} **{alert['titulo']}**{projeto}  \nprazo: {alert['prazo']}")
+        rows.append(f"{icone} **{alert['titulo']}**{projeto} — prazo: {alert['prazo']}")
 
     if not rows:
-        st.caption("Nenhuma tarefa pendente.")
         return
 
-    for row in rows:
-        st.markdown(row)
-        st.divider()
+    with st.expander(f"🔔 Alertas ({len(rows)})", expanded=has_overdue):
+        for row in rows:
+            st.markdown(row)
 
 
 def render_note_capture(save_fn):

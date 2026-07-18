@@ -72,44 +72,37 @@ clients = {
 st.markdown('<h1>Meu Brain Pessoal <i class="fa-solid fa-robot"></i></h1>', unsafe_allow_html=True)
 st.caption(f"Utilizando o modelo: **{selected_model_name}**")
 
-if st.session_state.get("show_alerts_panel", True):
-    chat_col, alerts_col = st.columns([3, 1])
-    with alerts_col:
-        try:
-            ui_components.render_alerts_panel(alerts.load_alerts())
-        except Exception as e:
-            logger.warning("Não foi possível carregar o painel de alertas: %r", e)
-else:
-    chat_col = st.container()
+try:
+    ui_components.render_alerts_panel(alerts.load_alerts())
+except Exception as e:
+    logger.warning("Não foi possível carregar o painel de alertas: %r", e)
 
-with chat_col:
-    if "messages" not in st.session_state:
-        st.session_state.messages = business_logic.DEFAULT_MESSAGES.copy()
+if "messages" not in st.session_state:
+    st.session_state.messages = business_logic.DEFAULT_MESSAGES.copy()
 
-    ui_components.render_message_history(st.session_state.messages)
+ui_components.render_message_history(st.session_state.messages)
 
 if prompt := st.chat_input("Qual sua dúvida?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with chat_col:
-        with st.chat_message("user"):
-            st.markdown(prompt)
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-        with st.chat_message("assistant"):
-            with st.spinner("Pensando..."):
-                try:
-                    api_messages = business_logic.get_api_messages(st.session_state.messages)
-                    provider_info = business_logic.PROVIDERS[st.session_state.selected_provider]
-                    active_client = clients[st.session_state.selected_provider]
-                    api_messages = business_logic.get_api_messages(st.session_state.messages)
-                    retrieved_chunks = rag.retrieve(nvidia_client, prompt)
-                    context_block = rag.build_context_block(retrieved_chunks)
-                    api_messages[-1]["content"] = f"{context_block}\n\nPergunta do usuário: {api_messages[-1]['content']}"
-                    response = cast(str, st.write_stream(
-                        provider_info["stream_fn"](active_client, st.session_state.selected_model, api_messages)
-                    ))
-                except Exception as e:
-                    logger.error("Erro ao chamar API Anthropic: %r", e, exc_info=True)
-                    st.error(f"Ocorreu um erro ao chamar a API: {e}")
-                    response = "Desculpe, ocorreu um erro."
+    with st.chat_message("assistant"):
+        with st.spinner("Pensando..."):
+            try:
+                api_messages = business_logic.get_api_messages(st.session_state.messages)
+                provider_info = business_logic.PROVIDERS[st.session_state.selected_provider]
+                active_client = clients[st.session_state.selected_provider]
+                api_messages = business_logic.get_api_messages(st.session_state.messages)
+                retrieved_chunks = rag.retrieve(nvidia_client, prompt)
+                context_block = rag.build_context_block(retrieved_chunks)
+                api_messages[-1]["content"] = f"{context_block}\n\nPergunta do usuário: {api_messages[-1]['content']}"
+                response = cast(str, st.write_stream(
+                    provider_info["stream_fn"](active_client, st.session_state.selected_model, api_messages)
+                ))
+            except Exception as e:
+                logger.error("Erro ao chamar API Anthropic: %r", e, exc_info=True)
+                st.error(f"Ocorreu um erro ao chamar a API: {e}")
+                response = "Desculpe, ocorreu um erro."
 
     st.session_state.messages.append({"role": "assistant", "content": response})

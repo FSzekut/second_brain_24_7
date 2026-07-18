@@ -86,7 +86,7 @@ Cada pergunta do usuário é usada para buscar, por similaridade de cosseno, os 
 O caminho inverso do RAG: um formulário na barra lateral permite escrever uma nota rapidamente, de qualquer lugar, que vai direto para um bucket "inbox" no Cloud Storage (`src/inbox.py`). Depois, rodando localmente, `scripts/pull_inbox.py` traz essas notas de volta para `00 - Entrada/` no vault e apaga o blob do bucket.
 
 ### Painel de alertas (tarefas e prazos)
-Uma coluna à direita do chat mostra tarefas pendentes com prazo, sem gastar nenhuma chamada de LLM: notas do vault marcadas com o frontmatter `tipo: tarefa` (mais `prazo`, `projeto` opcional e `status: pendente`) são varridas localmente por `scripts/build_alerts.py`, que gera um `alerts.json` simples (sem embeddings, sem IA) e o envia pro mesmo bucket do índice RAG. O app (`src/alerts.py`) só lê e ordena esse JSON por proximidade do prazo, destacando 🔴 atrasadas e 🟡 vencendo nos próximos 3 dias. O painel pode ser ocultado por completo (libera a largura toda pro chat) via checkbox na barra lateral.
+Um expander no topo da página mostra tarefas pendentes com prazo, sem gastar nenhuma chamada de LLM: notas do vault marcadas com o frontmatter `tipo: tarefa` (mais `prazo`, `projeto` opcional e `status: pendente`) são varridas localmente por `scripts/build_alerts.py`, que gera um `alerts.json` simples (sem embeddings, sem IA) e o envia pro mesmo bucket do índice RAG. O app (`src/alerts.py`) só lê e ordena esse JSON por proximidade do prazo, destacando 🔴 atrasadas e 🟡 vencendo nos próximos 3 dias. O painel some sozinho se não houver tarefa pendente, e abre recolhido a menos que exista algo atrasado.
 
 ## Decisões de design
 
