@@ -2,26 +2,9 @@
 
 Ideias capturadas via app/vault, ainda não implementadas.
 
-## Painel de alertas
+## ~~Painel de alertas~~ ✅ Implementado (2026-07-18)
 
-Tela dedicada para exibir alertas de datas importantes e próximos passos pendentes em várias frentes — algo como um dashboard rápido ao abrir o app, em vez de precisar perguntar pro chat.
-
-**Desenho definido (2026-07-18)**: dado estruturado, não extração via LLM — consistente com a decisão já tomada de sincronização em lote (ver "Decisões de design" no README). Custo de API para essa feature: zero; só custo de nuvem (leitura de um JSON pequeno no Cloud Storage).
-
-Schema novo de frontmatter, aplicado só em notas marcadas deliberadamente como tarefa/compromisso:
-```yaml
-tipo: tarefa
-prazo: 2026-08-01
-projeto: nome-do-projeto  # opcional, pra agrupar no painel
-status: pendente          # pendente | concluído
-```
-
-Arquitetura (mesmo padrão de `build_index.py`/`pull_inbox.py`):
-1. `scripts/build_alerts.py` (novo, roda localmente) — varre o vault, filtra notas com `tipo: tarefa` e `status: pendente`, ordena por `prazo`, gera `alerts.json`.
-2. `alerts.json` sobe manualmente para um bucket no Cloud Storage (mesmo bucket do índice RAG, ou um novo — a decidir).
-3. Painel no app Streamlit lê o `alerts.json` direto, sem chamada a LLM — ordenado por proximidade do prazo, destacando o que está vencendo.
-
-Ainda não implementado — próximo passo é montar o plano de implementação (arquivos a criar/editar, decisão sobre bucket).
+Dashboard de tarefas/prazos pendentes, via dado estruturado (frontmatter `tipo: tarefa`/`prazo`/`projeto`/`status`), sem nenhuma chamada de LLM — documentado em detalhe no [README](README.md#painel-de-alertas-tarefas-e-prazos) ("Funcionalidades" e "Decisões de design"). Usa o mesmo bucket do índice RAG.
 
 ## Acesso remoto ao Claude Code via app
 

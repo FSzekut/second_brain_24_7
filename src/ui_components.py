@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 import os
 import streamlit as st
@@ -67,6 +68,37 @@ def render_message_history(messages):
     for message in messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+
+def render_alerts_panel(alerts):
+    if not alerts:
+        return
+
+    today = date.today()
+    has_overdue = False
+    rows = []
+    for alert in alerts:
+        try:
+            prazo = date.fromisoformat(alert["prazo"])
+        except (KeyError, ValueError):
+            continue
+        dias = (prazo - today).days
+        if dias < 0:
+            icone = "🔴"
+            has_overdue = True
+        elif dias <= 3:
+            icone = "🟡"
+        else:
+            icone = "⚪"
+        projeto = f" ({alert['projeto']})" if alert.get("projeto") else ""
+        rows.append(f"{icone} **{alert['titulo']}**{projeto} — prazo: {alert['prazo']}")
+
+    if not rows:
+        return
+
+    with st.expander(f"🔔 Alertas ({len(rows)})", expanded=has_overdue):
+        for row in rows:
+            st.markdown(row)
+
 
 def render_note_capture(save_fn):
     with st.sidebar:

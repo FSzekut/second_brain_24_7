@@ -44,7 +44,8 @@ GitHub repo ──────────────────────�
                          ├──► Claude / NVIDIA NIM / Gemini (troca em runtime)
                          │
                          ├──► Cloud Storage: bucket de índice RAG
-                         │        (vault_index.json com embeddings)
+                         │        (vault_index.json com embeddings,
+                         │         alerts.json com tarefas/prazos)
                          │
                          └──► Cloud Storage: bucket "inbox" de notas
                                   │
@@ -53,7 +54,7 @@ GitHub repo ──────────────────────�
                          Vault Obsidian local (00 - Entrada/)
 ```
 
-A indexação do vault (`scripts/build_index.py`) também roda localmente, não no Cloud Run: ela lê os arquivos `.md` direto do vault no disco (via WSL) e gera o `vault_index.json`, que depois é enviado manualmente para o bucket de índice. Isso evita ter que expor o vault inteiro para a nuvem — só o índice de embeddings sobe.
+A indexação do vault (`scripts/build_index.py`) e a geração de alertas (`scripts/build_alerts.py`) também rodam localmente, não no Cloud Run: elas leem os arquivos `.md` direto do vault no disco (via WSL) e geram `vault_index.json`/`alerts.json`, que depois são enviados manualmente para o bucket de índice. Isso evita ter que expor o vault inteiro para a nuvem — só o índice de embeddings e o resumo de tarefas sobem.
 
 ## Stack tecnológica
 
@@ -84,6 +85,9 @@ Cada pergunta do usuário é usada para buscar, por similaridade de cosseno, os 
 ### Captura de notas via app
 O caminho inverso do RAG: um formulário na barra lateral permite escrever uma nota rapidamente, de qualquer lugar, que vai direto para um bucket "inbox" no Cloud Storage (`src/inbox.py`). Depois, rodando localmente, `scripts/pull_inbox.py` traz essas notas de volta para `00 - Entrada/` no vault e apaga o blob do bucket.
 
+### Painel de alertas (tarefas e prazos)
+Um painel no topo da página mostra tarefas pendentes com prazo, sem gastar nenhuma chamada de LLM: notas do vault marcadas com o frontmatter `tipo: tarefa` (mais `prazo`, `projeto` opcional e `status: pendente`) são varridas localmente por `scripts/build_alerts.py`, que gera um `alerts.json` simples (sem embeddings, sem IA) e o envia pro mesmo bucket do índice RAG. O app (`src/alerts.py`) só lê e ordena esse JSON por proximidade do prazo, destacando 🔴 atrasadas e 🟡 vencendo nos próximos 3 dias.
+
 ## Decisões de design
 
 - **Sincronização em lote, não em tempo real.** Tanto a indexação do vault quanto a captura de notas são processos em lote, disparados manualmente (rodar um script). Foi uma escolha consciente: um projeto anterior meu travou tentando resolver sincronização em tempo real (webhooks/watchers) entre o vault e um serviço externo. Aqui, "puxar quando eu quiser" é mais simples de operar e suficiente para o meu uso.
@@ -92,6 +96,7 @@ O caminho inverso do RAG: um formulário na barra lateral permite escrever uma n
 - **Sem banco vetorial dedicado.** O índice do vault é pequeno o suficiente para caber inteiro em memória; comparar embeddings com NumPy é mais simples de operar (e de debugar) do que subir um Pinecone/Weaviate/pgvector para esse volume de dados.
 - **Autenticação sem identidade federada.** Como é uma aplicação de uso pessoal exposta publicamente (`--allow-unauthenticated` no Cloud Run), o acesso é protegido por uma senha simples (`APP_PASSWORD`, guardada no Secret Manager) em vez de OAuth/IAP — suficiente para o risco real do projeto, sem a complexidade de configurar identidade federada para um usuário só.
 - **CI/CD sem chaves estáticas.** O workflow de deploy autentica no GCP via Workload Identity Federation, trocando um token de curta duração do GitHub por credenciais do GCP — nenhuma chave de service account em JSON fica armazenada como secret do GitHub.
+- **Alertas via dado estruturado, não LLM.** O painel de tarefas/prazos foi desenhado deliberadamente para não usar RAG nem qualquer chamada de LLM: RAG serve pra "achar o que é relevante pra uma pergunta" (busca aproximada, top-k), enquanto o painel precisa ser exato e completo (todas as tarefas pendentes, ordenadas por prazo). Frontmatter estruturado + leitura direta de JSON garante isso sem custo de API.
 
 ## Como rodar localmente
 
@@ -136,6 +141,25 @@ python scripts/build_index.py
 
 Isso lê o vault do Obsidian localmente e gera `vault_index.json`. O arquivo depois precisa ser enviado ao bucket de índice no Cloud Storage (o script não faz isso automaticamente).
 
+### Gerando o painel de alertas
+
+Marque notas do vault com o frontmatter abaixo (só nas que forem tarefa/compromisso com prazo):
+
+```yaml
+tipo: tarefa
+prazo: 2026-08-01
+projeto: nome-do-projeto  # opcional
+status: pendente          # pendente | concluído
+```
+
+Depois rode:
+
+```bash
+python scripts/build_alerts.py
+```
+
+Isso gera `alerts.json` localmente. Envie pro mesmo bucket do índice RAG (`meu-claude-ui-2026-rag-index`), por exemplo com `gcloud storage cp alerts.json gs://meu-claude-ui-2026-rag-index/alerts.json`.
+
 ### Trazendo notas capturadas pelo app de volta pro vault
 
 ```bash
@@ -162,12 +186,14 @@ O serviço roda com uma service account dedicada (`chatbot-sa`), com permissão 
 ├── .github/workflows/deploy.yml # pipeline de CI/CD
 ├── scripts/
 │   ├── build_index.py           # indexa o vault (RAG) — roda localmente
+│   ├── build_alerts.py          # gera o painel de tarefas/prazos — roda localmente
 │   └── pull_inbox.py            # traz notas capturadas de volta pro vault
 └── src/
     ├── main.py                  # entrypoint da app Streamlit
     ├── business_logic.py        # adapters dos providers de LLM
-    ├── ui_components.py         # componentes de UI (sidebar, chat, captura de notas)
+    ├── ui_components.py         # componentes de UI (sidebar, chat, captura de notas, alertas)
     ├── rag.py                   # busca por similaridade sobre o índice do vault
+    ├── alerts.py                # lê o painel de alertas (alerts.json) do bucket
     ├── inbox.py                 # salva notas capturadas no bucket de inbox
     └── assets/style.css
 ```

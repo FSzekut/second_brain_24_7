@@ -2,6 +2,7 @@ import logging
 import os
 import rag
 
+import alerts
 import inbox
 from google import genai
 from openai import OpenAI
@@ -70,6 +71,11 @@ clients = {
 
 st.markdown('<h1>Meu Brain Pessoal <i class="fa-solid fa-robot"></i></h1>', unsafe_allow_html=True)
 st.caption(f"Utilizando o modelo: **{selected_model_name}**")
+
+try:
+    ui_components.render_alerts_panel(alerts.load_alerts())
+except Exception as e:
+    logger.warning("Não foi possível carregar o painel de alertas: %r", e)
 
 if "messages" not in st.session_state:
     st.session_state.messages = business_logic.DEFAULT_MESSAGES.copy()

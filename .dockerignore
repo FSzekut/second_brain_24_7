@@ -1,5 +1,6 @@
 scripts/*
 vault_index.json
+alerts.json
 .env
 .venv
 __pycache__

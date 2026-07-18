@@ -10,3 +10,6 @@ __pycache__/
 
 # Notas do vault em chunks
 vault_index.json
+
+# Alertas/tarefas geradas localmente (dado pessoal, não deve ir pro repo)
+alerts.json
