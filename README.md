@@ -1,8 +1,19 @@
 # Second Brain 24/7
 
+![Deploy](https://github.com/FSzekut/second_brain_24_7/actions/workflows/deploy.yml/badge.svg)
+
 Chatbot pessoal multi-provider com RAG sobre o meu próprio "second brain" (um vault do Obsidian), rodando em produção no Google Cloud Run com deploy automatizado via GitHub Actions.
 
 Internamente o projeto é conhecido como `meu-claude-ui` (nome do serviço, dos buckets e do projeto GCP) — o repositório foi renomeado para `second_brain_24_7` porque é isso, na prática, que ele virou: uma forma de conversar com um LLM que enxerga o meu conhecimento pessoal, de qualquer lugar, a qualquer hora.
+
+## Screenshots
+
+<!-- TODO: adicionar prints reais da aplicação antes de divulgar o repo.
+     Sugestão: 1 print do chat multi-provider, 1 print da captura de notas na sidebar. -->
+
+| Chat multi-provider | Captura de notas |
+|---|---|
+| _(adicionar screenshot)_ | _(adicionar screenshot)_ |
 
 ## Por que esse projeto existe
 
@@ -13,7 +24,7 @@ A stack e as decisões de arquitetura foram escolhidas deliberadamente para apre
 ## Arquitetura
 
 ```
-                         push na branch main
+                        push na branch master
 GitHub repo ─────────────────────────────────────► GitHub Actions
                                                      (auth via Workload
                                                       Identity Federation,
@@ -167,3 +178,7 @@ O serviço roda com uma service account dedicada (`chatbot-sa`), com permissão 
 ## Status
 
 Projeto pessoal, em uso e evolução contínua. Não está aberto a contribuições externas (é uma ferramenta feita para o meu próprio fluxo de trabalho), mas o código é público como referência de arquitetura para quem quiser estudar o padrão Streamlit + Cloud Run + CI/CD com Workload Identity Federation, ou a implementação de RAG "do zero" sem framework.
+
+## Licença
+
+Todos os direitos reservados — veja [LICENSE](LICENSE). O código é público apenas para leitura e estudo, sem permissão de reuso.
