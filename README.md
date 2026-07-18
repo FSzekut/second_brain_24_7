@@ -8,12 +8,9 @@ Internamente o projeto é conhecido como `meu-claude-ui` (nome do serviço, dos 
 
 ## Screenshots
 
-<!-- TODO: adicionar prints reais da aplicação antes de divulgar o repo.
-     Sugestão: 1 print do chat multi-provider, 1 print da captura de notas na sidebar. -->
-
 | Chat multi-provider | Captura de notas |
 |---|---|
-| _(adicionar screenshot)_ | _(adicionar screenshot)_ |
+| ![Chat multi-provider](docs/screenshots/multi_provider.png) | ![Captura de notas](docs/screenshots/notas.png) |
 
 ## Por que esse projeto existe
 
