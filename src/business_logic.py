@@ -6,6 +6,17 @@ DEFAULT_MESSAGES = [
     {"role": "assistant", "content": "Olá! Como posso te ajudar hoje?"}
 ]
 
+SYSTEM_PROMPT = (
+    "Você é um assistente pessoal com acesso às notas do usuário via busca semântica. "
+    "O bloco \"Contexto do seu second brain\" abaixo de cada pergunta contém trechos "
+    "recuperados automaticamente por similaridade — podem ser irrelevantes ou "
+    "desatualizados. Use-os somente se realmente responderem à pergunta feita. "
+    "Nunca descreva a si mesmo, sua identidade ou seu histórico com base nesse "
+    "contexto — ele é material de referência sobre o usuário e seus projetos, "
+    "não uma descrição de quem você é. Se o contexto não for relevante ou "
+    "suficiente, diga isso em vez de inventar uma resposta a partir dele."
+)
+
 MODEL_MAPPING = {
     "Claude Opus 4.8": "claude-opus-4-8",
     "Claude Sonnet 5": "claude-sonnet-5",
@@ -26,6 +37,7 @@ def stream_response(client, model, messages, max_tokens=2048):
     with client.messages.stream(
         model=model,
         max_tokens=max_tokens,
+        system=SYSTEM_PROMPT,
         messages=messages,
     ) as stream:
         yield from stream.text_stream
@@ -33,7 +45,7 @@ def stream_response(client, model, messages, max_tokens=2048):
 def stream_nvidia(client, model, messages, max_tokens=4096):
     response = client.chat.completions.create(
         model=model,
-        messages=messages,
+        messages=[{"role": "system", "content": SYSTEM_PROMPT}] + messages,
         max_tokens=max_tokens,
         temperature=0.6,
         top_p=0.95,
@@ -66,6 +78,7 @@ def stream_gemini(client, model, messages, max_tokens=4096):
     response = client.models.generate_content_stream(
         model=model,
         contents=contents,
+        config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
     )
     for chunk in response:
         if chunk.text:
