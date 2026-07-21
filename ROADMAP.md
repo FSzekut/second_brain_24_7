@@ -6,6 +6,12 @@ Ideias capturadas via app/vault, ainda não implementadas.
 
 Dashboard de tarefas/prazos pendentes, via dado estruturado (frontmatter `tipo: tarefa`/`prazo`/`projeto`/`status`), sem nenhuma chamada de LLM — documentado em detalhe no [README](README.md#painel-de-alertas-tarefas-e-prazos) ("Funcionalidades" e "Decisões de design"). Usa o mesmo bucket do índice RAG.
 
+## Link/nome mais profissional (branding da URL)
+
+A URL padrão do Cloud Run (`*.run.app` com sufixo aleatório) não passa uma imagem profissional pra uma peça de portfólio pública. Opções a avaliar:
+- Domínio customizado via `gcloud run domain-mappings` (exige domínio próprio).
+- Sem domínio: pelo menos renomear o serviço Cloud Run pra algo limpo (ex. `second-brain-24-7`) e, no README, linkar com texto amigável em vez da URL crua.
+
 ## Acesso remoto ao Claude Code via app
 
 Ideia original (usar o link deste app pra acionar/controlar o Claude Code do notebook remotamente) **não é viável como pensado** — pesquisado e confirmado: não existe `/remote`; o que existe é o *Remote Control* nativo do Claude Code (`claude remote-control` / `/remote-control`), que conecta a sessão já rodando no notebook ao claude.ai/code ou app mobile, mas fala só com o backend da própria Anthropic — um app de terceiros (este Streamlit) não consegue interceptar essa conexão, e a sessão local precisa já estar de pé.
