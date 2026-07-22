@@ -139,9 +139,10 @@ docker run -p 8501:8501 --env-file .env second-brain-24-7
 
 ```bash
 python scripts/build_index.py
+gcloud storage cp vault_index.json gs://meu-claude-ui-2026-rag-index/vault_index.json
 ```
 
-Isso lê o vault do Obsidian localmente e gera `vault_index.json`. O arquivo depois precisa ser enviado ao bucket de índice no Cloud Storage (o script não faz isso automaticamente).
+Isso lê o vault do Obsidian localmente, gera `vault_index.json` e envia o índice para o bucket lido pelo app em produção. O arquivo é um artefato derivado das notas pessoais e não deve ser commitado.
 
 ### Gerando o painel de alertas
 
@@ -161,15 +162,18 @@ Depois rode:
 
 ```bash
 python scripts/build_alerts.py
+gcloud storage cp alerts.json gs://meu-claude-ui-2026-rag-index/alerts.json
 ```
 
-Isso gera `alerts.json` localmente. Envie pro mesmo bucket do índice RAG (`meu-claude-ui-2026-rag-index`), por exemplo com `gcloud storage cp alerts.json gs://meu-claude-ui-2026-rag-index/alerts.json`.
+Isso gera `alerts.json` localmente e envia o painel de tarefas para o mesmo bucket do índice RAG. O arquivo também é um artefato derivado do vault e não deve ser commitado.
 
 ### Trazendo notas capturadas pelo app de volta pro vault
 
 ```bash
 python scripts/pull_inbox.py
 ```
+
+Veja o runbook completo com pré-requisitos, variáveis de ambiente, comandos de upload e troubleshooting em [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 ## Deploy
 
