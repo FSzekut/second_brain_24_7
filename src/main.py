@@ -69,7 +69,7 @@ clients = {
     "Gemini": gemini_client,
 }
 
-st.markdown('<h1>Meu Brain Pessoal <i class="fa-solid fa-robot"></i></h1>', unsafe_allow_html=True)
+st.markdown('<h1>Meu Brain Pessoal <i class="fa-solid fa-brain"></i></h1>', unsafe_allow_html=True)
 st.caption(f"Utilizando o modelo: **{selected_model_name}**")
 
 try:
