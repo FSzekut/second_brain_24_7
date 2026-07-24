@@ -8,9 +8,9 @@ Internamente o projeto é conhecido como `meu-claude-ui` (nome do serviço, dos 
 
 ## Screenshots
 
-| Chat multi-provider | Captura de notas |
-|---|---|
-| ![Chat multi-provider](docs/screenshots/multi_provider.png) | ![Captura de notas](docs/screenshots/notas.png) |
+| Gate de acesso (LIMIAR) | Chat multi-provider | Captura de notas |
+|---|---|---|
+| ![Gate de acesso LIMIAR](docs/screenshots/gate.png) | ![Chat multi-provider](docs/screenshots/multi_provider.png) | ![Captura de notas](docs/screenshots/notas.png) |
 
 ## Por que esse projeto existe
 
@@ -71,6 +71,9 @@ A indexação do vault (`scripts/build_index.py`) e a geração de alertas (`scr
 
 ## Funcionalidades
 
+### Gate de acesso temático (LIMIAR)
+A tela de login não é um formulário genérico: é uma experiência temática de "terminal decifrando um sinal criptografado" — scanlines, glow radial, grade em perspectiva e cursor customizado, implementados em `src/assets/gate.css`. Por trás da estética, a segurança é real: comparação da senha via `secrets.compare_digest` (evita timing attack), bloqueio progressivo por processo após 5 tentativas erradas (30s → 60s → ... → até 15min de cooldown) e um honeypot passivo — tentativas com formato de e-mail recebem uma mensagem diferente das demais e são logadas silenciosamente, sem nenhum sinal visível ao usuário de que a tentativa foi registrada. Um botão de logout permite encerrar a sessão e voltar à tela de LIMIAR a qualquer momento.
+
 ### Multi-provider com troca em tempo real
 A barra lateral permite trocar de provedor (Claude, NVIDIA NIM, Gemini) e de modelo a qualquer momento, inclusive no meio de uma conversa. O histórico de mensagens é preservado ao trocar de provider — decisão deliberada: cada provider tem seu próprio adapter (`stream_response`, `stream_nvidia`, `stream_gemini` em `src/business_logic.py`) que recebe o mesmo formato interno de mensagens e o traduz para o formato esperado pela respectiva API (por exemplo, Gemini exige `role: "model"` em vez de `"assistant"`).
 
@@ -94,7 +97,7 @@ Um expander no topo da página mostra tarefas pendentes com prazo, sem gastar ne
 - **Embeddings assimétricos.** A indexação usa `input_type=passage` e a busca usa `input_type=query` — o modelo NV-Embed foi treinado para tratar documentos e perguntas de forma diferente, e usar o `input_type` errado degrada a qualidade da busca por similaridade.
 - **Histórico preservado ao trocar de provider.** Trocar de LLM no meio da conversa não reseta o contexto. Isso significa que um provider às vezes "vê" uma resposta que ele mesmo não gerou — um trade-off aceito em troca de poder comparar respostas de modelos diferentes sem perder o fio da conversa.
 - **Sem banco vetorial dedicado.** O índice do vault é pequeno o suficiente para caber inteiro em memória; comparar embeddings com NumPy é mais simples de operar (e de debugar) do que subir um Pinecone/Weaviate/pgvector para esse volume de dados.
-- **Autenticação sem identidade federada.** Como é uma aplicação de uso pessoal exposta publicamente (`--allow-unauthenticated` no Cloud Run), o acesso é protegido por uma senha simples (`APP_PASSWORD`, guardada no Secret Manager) em vez de OAuth/IAP — suficiente para o risco real do projeto, sem a complexidade de configurar identidade federada para um usuário só.
+- **Autenticação sem identidade federada.** Como é uma aplicação de uso pessoal exposta publicamente (`--allow-unauthenticated` no Cloud Run), o acesso é protegido por senha (`APP_PASSWORD`, guardada no Secret Manager) em vez de OAuth/IAP. Não foi só opção por simplicidade: o Identity-Aware Proxy do Google Cloud exige que o projeto pertença a uma Organização (Google Workspace/Cloud Identity), algo que contas Gmail pessoais não têm — IAP estava, na prática, indisponível para este projeto. Em compensação, a senha recebe tratamento sério (comparação em tempo constante, bloqueio progressivo, honeypot contra tentativas automatizadas) em vez de ser um simples `if senha == APP_PASSWORD`.
 - **CI/CD sem chaves estáticas.** O workflow de deploy autentica no GCP via Workload Identity Federation, trocando um token de curta duração do GitHub por credenciais do GCP — nenhuma chave de service account em JSON fica armazenada como secret do GitHub.
 - **Alertas via dado estruturado, não LLM.** O painel de tarefas/prazos foi desenhado deliberadamente para não usar RAG nem qualquer chamada de LLM: RAG serve pra "achar o que é relevante pra uma pergunta" (busca aproximada, top-k), enquanto o painel precisa ser exato e completo (todas as tarefas pendentes, ordenadas por prazo). Frontmatter estruturado + leitura direta de JSON garante isso sem custo de API.
 - **Tarefa concluída = frontmatter removido, não `status: concluído`.** Deixar tarefas concluídas marcadas indefinidamente acumularia metadado morto no vault. Concluir uma tarefa significa apagar os 4 campos de frontmatter da nota, não sinalizar outro status.
@@ -105,7 +108,7 @@ Um expander no topo da página mostra tarefas pendentes com prazo, sem gastar ne
 Pré-requisitos: Python 3.12+, uma conta GCP com os buckets/segredos configurados (para RAG e captura de notas) e chaves de API dos provedores que você quiser usar.
 
 ```bash
-git clone <url-do-repo>
+git clone https://github.com/FSzekut/second_brain_24_7.git
 cd second_brain_24_7
 
 python3 -m venv .venv

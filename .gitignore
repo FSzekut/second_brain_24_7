@@ -13,3 +13,6 @@ vault_index.json
 
 # Alertas/tarefas geradas localmente (dado pessoal, não deve ir pro repo)
 alerts.json
+
+# Symlink local pro vault Obsidian (caminho absoluto, só existe nesta máquina)
+obsidian-vault
