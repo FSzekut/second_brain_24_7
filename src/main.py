@@ -1,16 +1,8 @@
 import logging
 import os
-import rag
-
-import alerts
-import inbox
-from google import genai
-from openai import OpenAI
-import anthropic
 import streamlit as st
 from dotenv import load_dotenv
 
-import business_logic
 import ui_components
 
 from typing import cast
@@ -26,6 +18,17 @@ ui_components.load_css("style.css")
 
 if not ui_components.check_password():
     st.stop()
+
+# SDKs de LLM e do Google Cloud só são importados depois do gate: são pesados
+# de carregar (custam tempo real em cold start no Cloud Run) e não servem
+# pra nada enquanto a senha não foi validada.
+import rag
+import alerts
+import inbox
+from google import genai
+from openai import OpenAI
+import anthropic
+import business_logic
 
 selected_provider_name, selected_model_name = ui_components.render_sidebar(
     business_logic.PROVIDERS, business_logic.DEFAULT_MESSAGES
@@ -69,7 +72,7 @@ clients = {
     "Gemini": gemini_client,
 }
 
-st.markdown('<h1>Meu Brain Pessoal <i class="fa-solid fa-brain"></i></h1>', unsafe_allow_html=True)
+ui_components.render_app_title("Meu Brain Pessoal")
 st.caption(f"Utilizando o modelo: **{selected_model_name}**")
 
 try:

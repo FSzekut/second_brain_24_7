@@ -4,7 +4,8 @@
    verde/amarelo) — ciano/azul-elétrico, noir tecnológico.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Fontes (Orbitron + JetBrains Mono) carregadas via <link> em
+   ui_components.render_page_config() — não duplicar aqui com @import. */
 
 :root {
   --app-void: #050B12;
@@ -40,9 +41,11 @@
   text-shadow: 0 0 12px var(--app-glow-cyan);
 }
 
-.stApp h1 i {
+.stApp h1 .app-title-icon {
+  display: inline-flex;
+  vertical-align: middle;
   color: var(--app-cyan);
-  text-shadow: 0 0 10px var(--app-glow-cyan);
+  filter: drop-shadow(0 0 6px var(--app-glow-cyan));
   margin-left: 0.4rem;
 }
 

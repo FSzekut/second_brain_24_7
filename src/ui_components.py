@@ -28,6 +28,11 @@ _ICON_CAPTURE = """<svg width="16" height="16" viewBox="0 0 24 24" fill="none" s
 
 _ICON_TUNE = """<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="4" x2="5" y2="20"/><circle cx="5" cy="9" r="2" fill="currentColor" stroke="none"/><line x1="12" y1="4" x2="12" y2="20"/><circle cx="12" cy="15" r="2" fill="currentColor" stroke="none"/><line x1="19" y1="4" x2="19" y2="20"/><circle cx="19" cy="6" r="2" fill="currentColor" stroke="none"/></svg>"""
 
+# Glifo abstrato de "rede/núcleo" pro título do app — nó central ligado a três
+# nós externos, no lugar do ícone literal de cérebro do Font Awesome (que
+# exigia carregar a fonte de ícones inteira via CDN só por esse uso único).
+_ICON_BRAIN = """<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M12 7v3.2M9.3 15.3 11 11.2M14.7 15.3 13 11.2"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>"""
+
 
 def _icon_tag(svg, label, color, header=False):
     header_class = " as-header" if header else ""
@@ -175,6 +180,10 @@ def load_css(file_name):
         st.markdown(f"<style>{css_path.read_text()}</style>", unsafe_allow_html=True)
 
 
+def render_app_title(text):
+    st.markdown(f'<h1>{text} <span class="app-title-icon">{_ICON_BRAIN}</span></h1>', unsafe_allow_html=True)
+
+
 def render_page_config():
     st.set_page_config(
         page_title="Meu Claude Pessoal",
@@ -182,8 +191,14 @@ def render_page_config():
         layout="centered",
         initial_sidebar_state="auto",
     )
+    # Carregado uma vez só aqui (roda em toda página, gate ou app) em vez de
+    # duplicado via @import dentro de gate.css e style.css — evita duas
+    # requisições redundantes pra mesma fonte e não bloqueia o parse do CSS
+    # como @import faz.
     st.markdown(
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">',
+        '<link rel="preconnect" href="https://fonts.googleapis.com">'
+        '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;500&display=swap">',
         unsafe_allow_html=True,
     )
 

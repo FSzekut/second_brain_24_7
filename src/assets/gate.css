@@ -3,7 +3,8 @@
    Só é injetada enquanto password_correct != True (ver ui_components.check_password).
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Fontes (Orbitron + JetBrains Mono) carregadas via <link> em
+   ui_components.render_page_config() — não duplicar aqui com @import. */
 
 :root {
   --gate-void: #08060B;
